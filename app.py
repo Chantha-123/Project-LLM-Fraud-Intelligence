@@ -61,6 +61,15 @@ except Exception as e:
     logger.error(f"Failed to initialize predictor: {e}")
     predictor = None
 
+@app.route("/", methods=["GET"])
+@app.route("/index.html", methods=["GET"])
+def index():
+    try:
+        with open("index.html", "r") as f:
+            return f.read()
+    except Exception as e:
+        return f"Error loading index.html: {e}", 500
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "healthy", "model_loaded": predictor is not None})
