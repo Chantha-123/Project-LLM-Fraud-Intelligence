@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuardLink | Professional Loan Fraud Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #0f172a, #020617);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .input-dark {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
+        .input-dark:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+            outline: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-12 animate-fade-in">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-500/20 rounded-xl">
+                    <i data-lucide="shield-check" class="text-blue-400 w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">GuardLink<span class="text-blue-400">.ai</span></h1>
+                    <p class="text-slate-400 text-sm">Enterprise Fraud Intelligence</p>
+                </div>
+            </div>
+            <div class="hidden md:flex gap-6 text-sm font-medium text-slate-400">
+                <a href="#" class="hover:text-white transition">Dashboard</a>
+                <a href="#" class="hover:text-white transition">Audit Logs</a>
+                <a href="#" class="hover:text-white transition">API Settings</a>
+                <div class="h-5 w-[1px] bg-slate-700"></div>
+                <button class="flex items-center gap-2 hover:text-white transition">
+                    <i data-lucide="user" class="w-4 h-4"></i>
+                    Admin
+                </button>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Form -->
+            <div class="lg:col-span-2 space-y-8 animate-fade-in" style="animation-delay: 0.1s">
+                <section class="glass p-8 rounded-3xl">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-xl font-semibold">New Credit Analysis</h2>
+                            <p class="text-slate-400 text-sm">Input borrower metrics for real-time risk assessment</p>
+                        </div>
+                        <button onclick="fillDevData()" class="text-xs text-blue-400 hover:underline">Fill Sample Data</button>
+                    </div>
+
+                    <form id="predictForm" class="grid grid-cols-1 md:grid-cols-2 gap-6" onsubmit="event.preventDefault(); handlePredict();">
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Monthly Installment</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                                <input type="number" id="f1" step="any" required class="w-full pl-8 pr-4 py-3 rounded-xl input-dark" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Requested Loan Amount</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                                <input type="number" id="f2" step="any" required class="w-full pl-8 pr-4 py-3 rounded-xl input-dark" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Revolving Balance</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                                <input type="number" id="f3" step="any" required class="w-full pl-8 pr-4 py-3 rounded-xl input-dark" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Delinquencies (2Y)</label>
+                            <input type="number" id="f4" step="1" required class="w-full px-4 py-3 rounded-xl input-dark" placeholder="0">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Credit Inquiries (6M)</label>
+                            <input type="number" id="f5" step="1" required class="w-full px-4 py-3 rounded-xl input-dark" placeholder="0">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Mortgage Accounts</label>
+                            <input type="number" id="f6" step="1" required class="w-full px-4 py-3 rounded-xl input-dark" placeholder="0">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Open Accounts</label>
+                            <input type="number" id="f7" step="1" required class="w-full px-4 py-3 rounded-xl input-dark" placeholder="0">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Revolving Utilization (%)</label>
+                            <input type="number" id="f8" step="any" required class="w-full px-4 py-3 rounded-xl input-dark" placeholder="0.0">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Accounts</label>
+                            <input type="number" id="f9" step="1" required class="w-full px-4 py-3 rounded-xl input-dark" placeholder="0">
+                        </div>
+                        <div class="space-y-2 flex gap-4">
+                            <div class="flex-1 space-y-2">
+                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">FICO (Low)</label>
+                                <input type="number" id="f10" step="1" required class="w-full px-4 py-3 rounded-xl input-dark" placeholder="600">
+                            </div>
+                            <div class="flex-1 space-y-2">
+                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">FICO (High)</label>
+                                <input type="number" id="f11" step="1" required class="w-full px-4 py-3 rounded-xl input-dark" placeholder="850">
+                            </div>
+                        </div>
+                        <div class="md:col-span-2 space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Verified Annual Income</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                                <input type="number" id="f12" step="any" required class="w-full pl-8 pr-4 py-3 rounded-xl input-dark" placeholder="0.00">
+                            </div>
+                        </div>
+                        
+                        <div class="md:col-span-2 pt-4">
+                            <button type="submit" id="submitBtn" class="w-full py-4 rounded-xl btn-primary font-bold text-lg flex items-center justify-center gap-2">
+                                <i data-lucide="zap" class="w-5 h-5"></i>
+                                Run Neural Analysis
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+            <!-- Right Column: Result & Insights -->
+            <div class="space-y-8 animate-fade-in" style="animation-delay: 0.2s">
+                <!-- Result Card -->
+                <section id="resultCard" class="glass p-8 rounded-3xl hidden">
+                    <h2 class="text-xl font-semibold mb-6">Analysis Result</h2>
+                    
+                    <div class="text-center mb-8">
+                        <div id="riskIcon" class="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 bg-emerald-500/10 text-emerald-500">
+                            <i data-lucide="check-circle" class="w-12 h-12"></i>
+                        </div>
+                        <h3 id="riskTitle" class="text-3xl font-bold mb-2">Safe</h3>
+                        <p id="riskDesc" class="text-slate-400">Confidence Score: <span id="probPercent">85.0</span>%</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="glass bg-white/5 p-4 rounded-2xl flex justify-between items-center">
+                            <span class="text-slate-400 text-sm">Risk Level</span>
+                            <span id="riskLevel" class="font-semibold text-emerald-400">Low Risk</span>
+                        </div>
+                        <div class="glass bg-white/5 p-4 rounded-2xl flex justify-between items-center">
+                            <span class="text-slate-400 text-sm">System Action</span>
+                            <span id="recommendation" class="font-semibold px-3 py-1 bg-emerald-500/20 rounded-lg text-xs">AUTO-APPROVE</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 border-t border-white/5 pt-8">
+                        <canvas id="riskChart" height="200"></canvas>
+                    </div>
+                </section>
+
+                <!-- Status Card (Initial State) -->
+                <section id="statusPlaceholder" class="glass p-8 rounded-3xl flex flex-col items-center justify-center text-center min-h-[400px]">
+                    <div class="p-4 bg-slate-800 rounded-2xl mb-4 text-slate-500">
+                        <i data-lucide="pie-chart" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-lg font-medium">Awaiting Analysis</h3>
+                    <p class="text-slate-400 text-sm max-w-[200px] mt-2">Enter data and run analysis to see insights here.</p>
+                </section>
+
+                <!-- Help Card -->
+                <section class="glass p-6 rounded-3xl">
+                    <h3 class="text-sm font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="info" class="w-4 h-4 text-blue-400"></i>
+                        How it works
+                    </h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Our model uses a Deep Neural Network (12 inputs, 2 hidden layers) trained on historical loan data to identify complex fraud patterns that traditional rules-based systems miss.
+                    </p>
+                </section>
+            </div>
+        </main>
+
+        <footer class="mt-16 text-center text-slate-500 text-xs border-t border-white/5 pt-8">
+            &copy; 2026 GuardLink Enterprise Solutions. All rights reserved. Built with Neural Intelligence.
+        </footer>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="errorToast" class="fixed bottom-8 right-8 glass bg-red-500/20 border-red-500/30 p-4 rounded-2xl hidden flex items-center gap-4 animate-fade-in">
+        <i data-lucide="alert-circle" class="text-red-400"></i>
+        <div>
+            <p class="font-medium text-sm">Analysis Failed</p>
+            <p id="errorMsg" class="text-xs text-red-400/80">Could not connect to server.</p>
+        </div>
+        <button onclick="document.getElementById('errorToast').classList.add('hidden')" class="ml-4">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        let riskChart = null;
+
+        function fillDevData() {
+            document.getElementById('f1').value = 542.89;
+            document.getElementById('f2').value = 16000;
+            document.getElementById('f3').value = 21397;
+            document.getElementById('f4').value = 1;
+            document.getElementById('f5').value = 1;
+            document.getElementById('f6').value = 0;
+            document.getElementById('f7').value = 11;
+            document.getElementById('f8').value = 59.9;
+            document.getElementById('f9').value = 34;
+            document.getElementById('f10').value = 665;
+            document.getElementById('f11').value = 669;
+            document.getElementById('f12').value = 180000;
+        }
+
+        async function handlePredict() {
+            const btn = document.getElementById('submitBtn');
+            const originalContent = btn.innerHTML;
+            
+            // Loading State
+            btn.disabled = true;
+            btn.innerHTML = '<span class="flex items-center gap-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating Neural Map...</span>';
+
+            const features = [
+                +document.getElementById('f1').value, +document.getElementById('f2').value,
+                +document.getElementById('f3').value, +document.getElementById('f4').value,
+                +document.getElementById('f5').value, +document.getElementById('f6').value,
+                +document.getElementById('f7').value, +document.getElementById('f8').value,
+                +document.getElementById('f9').value, +document.getElementById('f10').value,
+                +document.getElementById('f11').value, +document.getElementById('f12').value
+            ];
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ features })
+                });
+
+                if (!response.ok) throw new Error('API server returned error');
+                
+                const data = await response.json();
+                showResult(data);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('errorToast').classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        }
+
+        function showResult(data) {
+            document.getElementById('statusPlaceholder').classList.add('hidden');
+            document.getElementById('resultCard').classList.remove('hidden');
+            
+            const isFraud = data.result === 'Fraud';
+            const prob = data.probability;
+            const confidence = isFraud ? prob : (1 - prob);
+            
+            // Update UI
+            document.getElementById('riskTitle').textContent = isFraud ? 'High Risk' : 'Low Risk';
+            document.getElementById('riskTitle').className = `text-3xl font-bold mb-2 ${isFraud ? 'text-rose-500' : 'text-emerald-500'}`;
+            document.getElementById('probPercent').textContent = (confidence * 100).toFixed(1);
+            
+            const levelEl = document.getElementById('riskLevel');
+            levelEl.textContent = data.risk_level + ' Risk';
+            levelEl.className = `font-semibold ${isFraud ? 'text-rose-400' : 'text-emerald-400'}`;
+            
+            const recEl = document.getElementById('recommendation');
+            recEl.textContent = data.recommendation.toUpperCase();
+            recEl.className = `font-semibold px-3 py-1 rounded-lg text-xs ${isFraud ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}`;
+            
+            const iconEl = document.getElementById('riskIcon');
+            iconEl.className = `w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 ${isFraud ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`;
+            iconEl.innerHTML = isFraud ? '<i data-lucide="alert-triangle" class="w-12 h-12"></i>' : '<i data-lucide="check-circle" class="w-12 h-12"></i>';
+            
+            lucide.createIcons();
+
+            // Update Chart
+            updateChart(prob);
+        }
+
+        function updateChart(prob) {
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            
+            if (riskChart) riskChart.destroy();
+            
+            riskChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fraud Risk', 'Safe Profile'],
+                    datasets: [{
+                        data: [prob, 1 - prob],
+                        backgroundColor: ['#f43f5e', '#10b981'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#94a3b8', font: { size: 10 } }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Risk Probability Distribution',
+                            color: '#94a3b8'
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
