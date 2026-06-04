@@ -1,3 +1,13 @@
+---
+title: Loan Fraud Detection System
+emoji: 🏦
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # GuardLink.ai | Loan Fraud Detection System
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)

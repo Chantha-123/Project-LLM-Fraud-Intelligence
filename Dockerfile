@@ -11,8 +11,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
-# Expose the port the app runs on
-EXPOSE 5000
+# Expose the port Hugging Face expects
+EXPOSE 7860
+
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1

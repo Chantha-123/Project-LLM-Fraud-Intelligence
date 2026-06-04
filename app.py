@@ -1,65 +1,72 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import torch
+import tensorflow as tf
 import pickle
 import numpy as np
 import logging
-from model import LoanFraudModel
 import os
+from model import create_loan_fraud_model
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)  # Enable Cross-Origin Resource Sharing
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Model configuration
-MODEL_PATH = "model/fraud_model.pth"
-SCALER_PATH = "model/scaler.pkl"
-INPUT_SIZE = 12
+# Paths 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 class FraudPredictor:
-    def __init__(self, model_path, scaler_path, input_size):
-        self.model = LoanFraudModel(input_size)
-        if os.path.exists(model_path):
-            self.model.load_state_dict(torch.load(model_path, map_location="cpu"))
-            logger.info(f"Model loaded from {model_path}")
-        else:
-            logger.warning(f"Model file not found at {model_path}")
+    def __init__(self):
+        self.model = None
+        self.scaler = None
+        self.last_error = "No model weights found"
         
-        self.model.eval()
-        
-        if os.path.exists(scaler_path):
-            with open(scaler_path, "rb") as f:
-                self.scaler = pickle.load(f)
-            logger.info(f"Scaler loaded from {scaler_path}")
-        else:
-            self.scaler = None
-            logger.warning(f"Scaler file not found at {scaler_path}")
+        search_dirs = [os.getcwd(), BASE_DIR, "/app", "/"]
+        for s_dir in search_dirs:
+            if self.model and self.scaler: break
+            try:
+                if not os.path.exists(s_dir): continue
+                files = os.listdir(s_dir)
+                for f in files:
+                    # 1. Load weights (the intelligent numbers)
+                    if f.endswith("model_weights.weights.h5") and self.model is None:
+                        try:
+                            # Re-build architecture exactly as in training
+                            self.model = create_loan_fraud_model(input_size=12)
+                            self.model.load_weights(os.path.join(s_dir, f))
+                            logger.info(f"✅ WEIGHTS LOADED FROM {f}")
+                        except Exception as e:
+                            self.last_error = f"Error loading weights: {str(e)}"
+                            logger.error(self.last_error)
+
+                    
+                    # 2. Load scaler
+                    if f.endswith(".pkl") and self.scaler is None:
+                        try:
+                            with open(os.path.join(s_dir, f), "rb") as file:
+                                self.scaler = pickle.load(file)
+                            logger.info(f"✅ SCALER LOADED FROM {f}")
+                        except: pass
+            except: continue
 
     def predict(self, features):
-        if self.scaler is None:
-            raise Exception("Scaler not initialized")
-        
         data = np.array(features).reshape(1, -1)
         data = self.scaler.transform(data)
-        x = torch.tensor(data, dtype=torch.float32)
+        prob = self.model.predict(data)[0][0]
+        return float(prob)
 
-        with torch.no_grad():
-            prob = torch.sigmoid(self.model(x)).item()
-        
-        return prob
+predictor = FraudPredictor()
 
-# Initialize predictor
-try:
-    predictor = FraudPredictor(MODEL_PATH, SCALER_PATH, INPUT_SIZE)
-except Exception as e:
-    logger.error(f"Failed to initialize predictor: {e}")
-    predictor = None
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({
+        "status": "online",
+        "model_loaded": predictor.model is not None,
+        "error": predictor.last_error
+    })
 
 @app.route("/", methods=["GET"])
 @app.route("/index.html", methods=["GET"])
@@ -68,44 +75,32 @@ def index():
         with open("index.html", "r") as f:
             return f.read()
     except Exception as e:
-        return f"Error loading index.html: {e}", 500
-
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "healthy", "model_loaded": predictor is not None})
+        return f"Error: {e}", 500
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    if predictor is None:
+    if not predictor.model:
         return jsonify({"error": "Model not loaded"}), 500
     
     try:
         data = request.json.get("features")
-        if not data or len(data) != INPUT_SIZE:
-            return jsonify({"error": f"Invalid input. Expected {INPUT_SIZE} features."}), 400
-        
         prob = predictor.predict(data)
         
-        # Determine risk level and recommendation
+        result = "Fraud" if prob > 0.5 else "Safe"
         risk_level = "High" if prob > 0.7 else "Medium" if prob > 0.3 else "Low"
         recommendation = "Reject" if prob > 0.7 else "Manual Review" if prob > 0.3 else "Approve"
 
-        result = {
-            "result": "Fraud" if prob > 0.5 else "Safe",
+        return jsonify({
+            "result": result,
             "probability": prob,
             "risk_level": risk_level,
             "recommendation": recommendation,
             "status": "success"
-        }
-        
-        logger.info(f"Prediction made: {result['result']} (prob: {prob:.4f})")
-        return jsonify(result)
-        
+        })
     except Exception as e:
-        logger.error(f"Prediction error: {e}")
-        return jsonify({"error": str(e), "status": "error"}), 500
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
-
+    # REQUIRED: Use port 7860 for Hugging Face
+    port = int(os.environ.get("PORT", 7860))
+    app.run(host='0.0.0.0', port=port, debug=False)

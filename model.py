@@ -1,16 +1,23 @@
-import torch
-import torch.nn as nn
+import tensorflow as tf
+from tensorflow.keras import layers, models
 
-class LoanFraudModel(nn.Module):
-    def __init__(self, input_size=12):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(input_size, 64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 1)
-        )
+def create_loan_fraud_model(input_size=12):
+    """
+    Creates a simple Neural Network using Keras.
+    Structure: Input (12) -> Hidden (64) -> Hidden (32) -> Output (1)
+    """
+    model = models.Sequential([
+        layers.Input(shape=(input_size,)),
+        layers.Dense(64, activation='relu'),
+        layers.Dense(32, activation='relu'),
+        layers.Dense(1, activation='sigmoid') # Sigmoid used for binary classification (0 or 1)
+    ])
+    
+    model.compile(
+        optimizer='adam',
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+    
+    return model
 
-    def forward(self, x):
-        return self.net(x)
