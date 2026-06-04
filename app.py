@@ -18,6 +18,37 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
+def prepare_input_vector(features):
+    """Convert 12 raw features into the full input vector used by the trained model."""
+    if len(features) != 12:
+        raise ValueError("Expected 12 numeric features")
+
+    installment, loan_amount, revolving_balance, delinquency_2years, inquiries_6months, mortgage_accounts, open_accounts, revolving_utilization, total_accounts, fico_range_low, fico_range_high, annual_income = [float(x) for x in features]
+    fico_avg = (fico_range_low + fico_range_high) / 2.0
+    loan_to_income = loan_amount / (annual_income + 1.0)
+    installment_to_income = installment / ((annual_income / 12.0) + 1.0)
+    open_to_total_ratio = open_accounts / (total_accounts + 1.0)
+
+    return np.array([
+        installment,
+        loan_amount,
+        revolving_balance,
+        delinquency_2years,
+        inquiries_6months,
+        mortgage_accounts,
+        open_accounts,
+        revolving_utilization,
+        total_accounts,
+        fico_range_low,
+        fico_range_high,
+        annual_income,
+        fico_avg,
+        loan_to_income,
+        installment_to_income,
+        open_to_total_ratio
+    ]).reshape(1, -1)
+
+
 class FraudPredictor:
     def __init__(self):
         self.model = None
@@ -37,7 +68,7 @@ class FraudPredictor:
                             # Re-build architecture exactly as in training
                             self.model = create_loan_fraud_model(input_size=12)
                             self.model.load_weights(os.path.join(s_dir, f))
-                            logger.info(f"✅ WEIGHTS LOADED FROM {f}")
+                            logger.info(f"WEIGHTS LOADED FROM {f}")
                         except Exception as e:
                             self.last_error = f"Error loading weights: {str(e)}"
                             logger.error(self.last_error)
@@ -48,12 +79,12 @@ class FraudPredictor:
                         try:
                             with open(os.path.join(s_dir, f), "rb") as file:
                                 self.scaler = pickle.load(file)
-                            logger.info(f"✅ SCALER LOADED FROM {f}")
+                            logger.info(f"SCALER LOADED FROM {f}")
                         except: pass
             except: continue
 
     def predict(self, features):
-        data = np.array(features).reshape(1, -1)
+        data = prepare_input_vector(features)
         data = self.scaler.transform(data)
         prob = self.model.predict(data)[0][0]
         return float(prob)

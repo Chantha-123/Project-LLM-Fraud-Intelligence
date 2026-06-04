@@ -3,21 +3,26 @@ from tensorflow.keras import layers, models
 
 def create_loan_fraud_model(input_size=12):
     """
-    Creates a simple Neural Network using Keras.
-    Structure: Input (12) -> Hidden (64) -> Hidden (32) -> Output (1)
+    Creates a stronger Keras model for loan fraud classification.
+    Uses batch normalization and dropout to improve generalization.
     """
     model = models.Sequential([
         layers.Input(shape=(input_size,)),
+        layers.Dense(128, activation='relu'),
+        layers.BatchNormalization(),
+        layers.Dropout(0.25),
         layers.Dense(64, activation='relu'),
+        layers.BatchNormalization(),
+        layers.Dropout(0.15),
         layers.Dense(32, activation='relu'),
-        layers.Dense(1, activation='sigmoid') # Sigmoid used for binary classification (0 or 1)
+        layers.Dense(1, activation='sigmoid')
     ])
-    
+
     model.compile(
-        optimizer='adam',
+        optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
         loss='binary_crossentropy',
-        metrics=['accuracy']
+        metrics=['accuracy', tf.keras.metrics.AUC(name='auc')]
     )
-    
+
     return model
 

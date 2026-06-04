@@ -3,6 +3,7 @@ tensorflow==2.16.1
 scikit-learn
 flask
 flask-cors
+matplotlib
 
 
 
